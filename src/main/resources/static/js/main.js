@@ -17,11 +17,18 @@ function connect() {
         setConnected(true);
         stompClient.subscribe("/topic/game", onGameReceived);
         stompClient.subscribe("/topic/shot", onShotReceived);
+        stompClient.subscribe("/topic/chat", onMessageReceived);
     });
 }
 
 function onGameReceived(game) {
 
+}
+
+function onMessageReceived(message) {
+    var receivedMessage = JSON.parse(message.body);
+
+    $("#chat-messages").append("<li><b>" + receivedMessage.sender + "</b>: " + receivedMessage.message + "</li>");
 }
 
 function onShotReceived(shot) {
@@ -56,6 +63,14 @@ function doShot(shot) {
         shot: shot
     };
     stompClient.send("/battle/game/shot", {}, JSON.stringify(doShotMessage));
+}
+
+function sendMessage() {
+    var message = {
+        sender: $("#name").val(),
+        message: $("#text-message").val()
+    };
+    stompClient.send("/battle/chat/send", {}, JSON.stringify(message));
 }
 
 $(function () {
@@ -95,6 +110,10 @@ $(function () {
 
     $("#add-ships").click(function () {
         addShips(list);
+    });
+
+    $("#send-message").click(function() {
+        sendMessage();
     });
 
     $("#disconnect").click(function () {
